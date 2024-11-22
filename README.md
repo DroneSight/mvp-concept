@@ -1,3 +1,3 @@
 ## DroneSight Pipeline Overview
 
-![DroneSight Architecture design](system-design.png "DroneSight Pipeline design")
+![DroneSight Architecture design](system-design-update.png "DroneSight Pipeline design")
