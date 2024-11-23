@@ -1,10 +1,16 @@
 from ultralytics import YOLO
+import argparse
 
-# Load a model, for demno purposes we use a small version of YOLOv11
+parser = argparse.ArgumentParser()
+parser.add_argument('data', type=str, help='Path to yaml file with training configuration')
+args = parser.parse_args()
+
+
+# Load a model, for demo purposes we use a small version of YOLOv11
 model = YOLO("yolo11n.pt")
 
 # Train the model
 train_results = model.train(
-    data="config.yaml",  # path to dataset YAML
-    epochs=100,  # number of training epochs
+    data=args.data,
+    epochs=100
 )
