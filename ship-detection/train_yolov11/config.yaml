@@ -1,7 +1,0 @@
-path: /absolute/path/to/the/SAR-Ship-Dataset
-train: images/train
-val: images/validation
-
-# Classes
-names:
-  0: ship
