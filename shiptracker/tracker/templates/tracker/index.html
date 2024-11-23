@@ -35,26 +35,25 @@
             position: relative;
         }
         #toggle-form {
-        position: absolute;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1100;
-        background: #007bff;
-        color: white;
-        border: none;
-        padding: 5px 20px; /* Зменшений внутрішній відступ */
-        cursor: pointer;
-        border-radius: 5px;
-        font-size: 14px; /* Компактний шрифт */
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        transition: background-color 0.3s ease;
-        width: auto; /* Кнопка не розтягується по ширині */
-    }
-
-    #toggle-form:hover {
-        background: #0056b3; /* Темніший відтінок при наведенні */
-    }
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1100;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 20px; /* Reduced padding for a compact button */
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 14px; /* Smaller font size for the button */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            width: auto; /* Prevent the button from stretching across the screen */
+        }
+        #toggle-form:hover {
+            background: #0056b3; /* Darker shade on hover */
+        }
         input, button {
             margin: 5px 0;
             padding: 10px;
@@ -76,10 +75,10 @@
 </head>
 <body>
 
-<!-- Кнопка для згортання/розгортання форми -->
+<!-- Button to toggle the parameters form -->
 <button id="toggle-form">Toggle Parameters</button>
 
-<!-- Форма для введення параметрів -->
+<!-- Form for entering map parameters -->
 <div id="form-container">
     <h2>Set Map Parameters</h2>
     <label for="lat">Latitude:</label>
@@ -98,7 +97,7 @@
     <button id="addHazard">Add Hazard</button>
 </div>
 
-<!-- Контейнер для карти -->
+<!-- Container for the map -->
 <div id="map-container">
     <div id="map" style="width: 100%; height: 100%;"></div>
 </div>
@@ -107,32 +106,32 @@
 <script>
     const hazards = [];
 
-    // Функція для згортання/розгортання форми
+    // Function to toggle the visibility of the parameters form
     document.getElementById('toggle-form').addEventListener('click', () => {
         const formContainer = document.getElementById('form-container');
         formContainer.classList.toggle('hidden');
     });
 
-    // Завантаження карти
+    // Load map based on input parameters
     document.getElementById('loadMap').addEventListener('click', function () {
         const lat = document.getElementById('lat').value;
         const lng = document.getElementById('lng').value;
         const zoom = document.getElementById('zoom').value;
 
-        // Видаляємо старий скрипт, якщо він існує
+        // Remove the existing map script if present
         const existingScript = document.getElementById('myshiptrackingscript');
         if (existingScript) {
             existingScript.remove();
         }
 
-        // Створюємо новий скрипт MyShipTracking
+        // Create a new MyShipTracking script
         const script = document.createElement('script');
         script.id = 'myshiptrackingscript';
         script.async = true;
         script.defer = true;
         script.src = "//www.myshiptracking.com/js/widgetApi.js";
 
-        // Додаємо параметри карти
+        // Add map configuration
         const mapConfig = `
             var mst_width="100%";
             var mst_height="100%";
@@ -146,20 +145,20 @@
             var mst_show_menu="0";
         `;
 
-        // Додаємо конфігурацію на сторінку
+        // Insert configuration into the page
         const scriptConfig = document.createElement('script');
         scriptConfig.textContent = mapConfig;
 
         const mapContainer = document.getElementById('map-container');
-        mapContainer.innerHTML = ""; // Очищення контейнера для уникнення дублювання
+        mapContainer.innerHTML = ""; // Clear the container to avoid duplicates
         mapContainer.appendChild(scriptConfig);
         mapContainer.appendChild(script);
 
-        // Відображення небезпечних зон
+        // Display hazard zones after loading the map
         setTimeout(() => addHazardsToMap(), 2000);
     });
 
-    // Додавання небезпечних зон
+    // Add hazard zones to the map
     document.getElementById('addHazard').addEventListener('click', function () {
         const hazardLat = parseFloat(document.getElementById('hazardLat').value);
         const hazardLng = parseFloat(document.getElementById('hazardLng').value);
@@ -176,11 +175,11 @@
     function addHazardsToMap() {
         const mapContainer = document.getElementById('map-container');
 
-        // Видаляємо попередні небезпечні зони
+        // Remove previous hazard zones
         document.querySelectorAll('.hazard').forEach(el => el.remove());
 
         hazards.forEach(hazard => {
-            // Перевірка контейнера карти
+            // Check if the map container is present
             const mapElement = mapContainer.querySelector('iframe');
             if (!mapElement) return;
 
@@ -188,11 +187,11 @@
             const mapWidth = mapRect.width;
             const mapHeight = mapRect.height;
 
-            // Вираховуємо позиції червоного кола
+            // Calculate the position of the red circle
             const x = ((hazard.lng + 180) / 360) * mapWidth;
             const y = ((90 - hazard.lat) / 180) * mapHeight;
 
-            // Додаємо червоне коло
+            // Add the red circle
             const hazardElement = document.createElement('div');
             hazardElement.className = 'hazard';
             hazardElement.style.left = `${x}px`;

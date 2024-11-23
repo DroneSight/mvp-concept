@@ -8,7 +8,7 @@ from django.shortcuts import render
 def fetch_ships(request):
     lat = request.GET.get("lat")
     lon = request.GET.get("lon")
-    radius = request.GET.get("radius", 10)  # Радиус по умолчанию
+    radius = request.GET.get("radius", 10)
 
     api_key = os.getenv("MYSHIPTRACKING_API_KEY")
     url = f"https://api.myshiptracking.com/vessels?lat={lat}&lon={lon}&radius={radius}&apikey={api_key}"
