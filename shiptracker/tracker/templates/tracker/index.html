@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Ship Map with Hazards</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        #form-container {
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border: 1px solid #ccc;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 8px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+        #form-container.hidden {
+            transform: translateX(-50%) translateY(-200%);
+            opacity: 0;
+        }
+        #map-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+        #toggle-form {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1100;
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 5px 20px; /* Зменшений внутрішній відступ */
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 14px; /* Компактний шрифт */
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+        width: auto; /* Кнопка не розтягується по ширині */
+    }
+
+    #toggle-form:hover {
+        background: #0056b3; /* Темніший відтінок при наведенні */
+    }
+        input, button {
+            margin: 5px 0;
+            padding: 10px;
+            width: calc(100% - 20px);
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        .hazard {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: rgba(255, 0, 0, 0.8);
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+
+<!-- Кнопка для згортання/розгортання форми -->
+<button id="toggle-form">Toggle Parameters</button>
+
+<!-- Форма для введення параметрів -->
+<div id="form-container">
+    <h2>Set Map Parameters</h2>
+    <label for="lat">Latitude:</label>
+    <input type="number" id="lat" step="0.0001" value="56.012868">
+    <label for="lng">Longitude:</label>
+    <input type="number" id="lng" step="0.0001" value="18.715617">
+    <label for="zoom">Zoom Level:</label>
+    <input type="number" id="zoom" min="1" max="18" value="6">
+    <button id="loadMap">Load Map</button>
+
+    <h3>Add Hazard Indicators</h3>
+    <label for="hazardLat">Hazard Latitude:</label>
+    <input type="number" id="hazardLat" step="0.0001">
+    <label for="hazardLng">Hazard Longitude:</label>
+    <input type="number" id="hazardLng" step="0.0001">
+    <button id="addHazard">Add Hazard</button>
+</div>
+
+<!-- Контейнер для карти -->
+<div id="map-container">
+    <div id="map" style="width: 100%; height: 100%;"></div>
+</div>
+
+<!-- MyShipTracking Script -->
+<script>
+    const hazards = [];
+
+    // Функція для згортання/розгортання форми
+    document.getElementById('toggle-form').addEventListener('click', () => {
+        const formContainer = document.getElementById('form-container');
+        formContainer.classList.toggle('hidden');
+    });
+
+    // Завантаження карти
+    document.getElementById('loadMap').addEventListener('click', function () {
+        const lat = document.getElementById('lat').value;
+        const lng = document.getElementById('lng').value;
+        const zoom = document.getElementById('zoom').value;
+
+        // Видаляємо старий скрипт, якщо він існує
+        const existingScript = document.getElementById('myshiptrackingscript');
+        if (existingScript) {
+            existingScript.remove();
+        }
+
+        // Створюємо новий скрипт MyShipTracking
+        const script = document.createElement('script');
+        script.id = 'myshiptrackingscript';
+        script.async = true;
+        script.defer = true;
+        script.src = "//www.myshiptracking.com/js/widgetApi.js";
+
+        // Додаємо параметри карти
+        const mapConfig = `
+            var mst_width="100%";
+            var mst_height="100%";
+            var mst_border="3";
+            var mst_map_style="simple";
+            var mst_lat="${lat}";
+            var mst_lng="${lng}";
+            var mst_zoom="${zoom}";
+            var mst_show_names="1";
+            var mst_scroll_wheel="1";
+            var mst_show_menu="0";
+        `;
+
+        // Додаємо конфігурацію на сторінку
+        const scriptConfig = document.createElement('script');
+        scriptConfig.textContent = mapConfig;
+
+        const mapContainer = document.getElementById('map-container');
+        mapContainer.innerHTML = ""; // Очищення контейнера для уникнення дублювання
+        mapContainer.appendChild(scriptConfig);
+        mapContainer.appendChild(script);
+
+        // Відображення небезпечних зон
+        setTimeout(() => addHazardsToMap(), 2000);
+    });
+
+    // Додавання небезпечних зон
+    document.getElementById('addHazard').addEventListener('click', function () {
+        const hazardLat = parseFloat(document.getElementById('hazardLat').value);
+        const hazardLng = parseFloat(document.getElementById('hazardLng').value);
+
+        if (isNaN(hazardLat) || isNaN(hazardLng)) {
+            alert("Please enter valid coordinates for the hazard.");
+            return;
+        }
+
+        hazards.push({ lat: hazardLat, lng: hazardLng });
+        addHazardsToMap();
+    });
+
+    function addHazardsToMap() {
+        const mapContainer = document.getElementById('map-container');
+
+        // Видаляємо попередні небезпечні зони
+        document.querySelectorAll('.hazard').forEach(el => el.remove());
+
+        hazards.forEach(hazard => {
+            // Перевірка контейнера карти
+            const mapElement = mapContainer.querySelector('iframe');
+            if (!mapElement) return;
+
+            const mapRect = mapContainer.getBoundingClientRect();
+            const mapWidth = mapRect.width;
+            const mapHeight = mapRect.height;
+
+            // Вираховуємо позиції червоного кола
+            const x = ((hazard.lng + 180) / 360) * mapWidth;
+            const y = ((90 - hazard.lat) / 180) * mapHeight;
+
+            // Додаємо червоне коло
+            const hazardElement = document.createElement('div');
+            hazardElement.className = 'hazard';
+            hazardElement.style.left = `${x}px`;
+            hazardElement.style.top = `${y}px`;
+
+            mapContainer.appendChild(hazardElement);
+        });
+    }
+</script>
+
+</body>
+</html>
