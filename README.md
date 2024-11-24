@@ -78,12 +78,4 @@ This project is a ship tracking and hazard visualization application built with 
    - **Latitude** and **Longitude** for the map center.
    - **Zoom Level** (range: 1 to 18).
    - Click **Load Map** to apply changes.
-4. To add a hazard marker:
-   - Enter the **Latitude** and **Longitude** for the hazard.
-   - Click **Add Hazard** to display the marker.
 
-## Future Enhancements
-
-- Integrate database storage for hazard markers.
-- Add authentication for user-specific settings.
-- Support additional map styles and layers.
